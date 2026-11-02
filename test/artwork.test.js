@@ -96,3 +96,16 @@ test('distinct default cover families retain editable content and blank dedicati
   assert.ok(!html.includes('<p>'));assert.ok(!html.includes('<svg'));assert.ok(html.includes('12'));
  }
 });
+
+
+test('CRT replay and Loot receipt have distinct square and full-stream layouts and safe editable text',async()=>{
+ const image='data:image/png;base64,'+(await sharp({create:{width:160,height:90,channels:3,background:'#496c81'}}).png().toBuffer()).toString('base64');
+ for(const template of ['postcard','ticket'])for(const format of ['square','wide']){
+  const svg=photoSvg({id:'frame-test',template,format,font:'mono',image,title:'<script>Capture</script>',caption:'A & B',createdAt:'2026-11-02T12:00:00Z',stickers:[],showAttribution:true,trigger:{viewer:'Viewer <3',amount:250,unit:'Bits'}});
+  assert.ok(svg.includes('&lt;script&gt;Capture&lt;/script&gt;'));assert.ok(svg.includes('A &amp; B'));assert.ok(svg.includes('Viewer &lt;3'));assert.ok(!svg.includes('<script>'));
+  assert.ok(svg.includes(template==='postcard'?'REPLAY SYSTEM':'DROP CONFIRMED')||format==='wide'&&template==='ticket'&&svg.includes('LOOT RECEIPT'));
+  const imageBox=svg.match(/<image href="[^"]+" x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/);
+  assert.ok(imageBox);assert.equal(Number(imageBox[3])/Number(imageBox[4]),format==='wide'?16/9:1);
+  const png=await sharp(Buffer.from(svg)).png().toBuffer();const size=await sharp(png).metadata();assert.equal(size.width,format==='wide'?960:400);assert.equal(size.height,format==='wide'?540:480);
+ }
+});

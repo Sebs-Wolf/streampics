@@ -1,0 +1,44 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,rm} from 'node:fs/promises';
+import path from 'node:path';
+import {WebSocketServer} from 'ws';
+import {createApp} from '../server/index.js';
+const fixtures=path.resolve('data/test-fixtures');
+await mkdir(fixtures,{recursive:true});
+const waitFor=async fn=>{const until=Date.now()+4000;while(!fn()){if(Date.now()>until)throw new Error('Timed out waiting for event capture');await new Promise(r=>setTimeout(r,20));}};
+test('local CLI events capture through trigger filters without OAuth and preserve the real Twitch login',async()=>{
+ const directory=await mkdtemp(path.join(fixtures,'cli-'));
+ const wss=new WebSocketServer({host:'127.0.0.1',port:0});await new Promise(r=>wss.once('listening',r));
+ let socket;
+ wss.on('connection',s=>{socket=s;s.send(JSON.stringify({metadata:{message_type:'session_welcome'},payload:{session:{id:'cli-session',keepalive_timeout_seconds:30}}}));});
+ const runtime=await createApp({directory,obsOverride:{connected:true,scene:'Program',capture:async()=>({buffer:Buffer.from('test-only'),scene:'Program'})}});
+ const server=runtime.app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+ const base=`http://127.0.0.1:${server.address().port}`;
+ const call=async(route,body)=>{const r=await fetch(base+route,{method:'POST',headers:{'Content-Type':'application/json','X-StreamPics-Client':'studio'},body:JSON.stringify(body||{})});return {status:r.status,data:await r.json()};};
+ const credentials={access_token:'existing-test-login',username:'RealChannel'};runtime.store.data.twitch=credentials;
+ const emit=(id,type,event)=>socket.send(JSON.stringify({metadata:{message_id:id,message_type:'notification'},payload:{subscription:{type},event}}));
+ try{
+  const connection=await call('/api/twitch/test/connect',{port:wss.address().port});assert.equal(connection.status,200);assert.equal(connection.data.mock,true);assert.equal(connection.data.connected,true);
+  assert.deepEqual(runtime.store.data.twitch,credentials);
+  assert.throws(()=>runtime.twitch.open('ws://example.com/ws',false),/Unexpected/);
+  assert.throws(()=>runtime.twitch.open(`ws://127.0.0.1:${wss.address().port+1}/ws`,false),/Unexpected/);
+  assert.equal((await call('/api/twitch/test/connect',{port:'8080'})).status,400);assert.equal(runtime.twitch.connected,true);
+  runtime.store.data.settings.bitsEnabled=true;runtime.store.data.settings.subsEnabled=true;runtime.store.data.settings.minBits=100;
+  emit('below','channel.cheer',{user_name:'MockViewer',bits:50});
+  emit('cheer','channel.cheer',{user_name:'MockViewer',bits:250,message:'Clutch!'});
+  emit('cheer','channel.cheer',{user_name:'MockViewer',bits:250});
+  emit('recipient','channel.subscribe',{user_name:'Recipient',is_gift:true,tier:'1000'});
+  emit('sub','channel.subscribe',{user_name:'Subscriber',is_gift:false,tier:'1000'});
+  emit('gift','channel.subscription.gift',{user_name:'Gifter',total:5});
+  emit('resub','channel.subscription.message',{user_name:'Returning',tier:'1000',cumulative_months:6,message:{text:'Six months!'}});
+  await waitFor(()=>runtime.store.data.photos.length===4&&runtime.store.data.events.length===4);
+  assert.deepEqual(runtime.store.data.photos.map(p=>p.trigger.kind),['bits','sub','gift','resub']);
+  assert.ok(runtime.store.data.photos.every(p=>p.trigger.test&&p.title==='CLI test moment'));
+  assert.ok(runtime.store.data.events.every(e=>e.message.startsWith('[TEST]')));
+  assert.equal(runtime.store.data.photos[0].trigger.amount,250);assert.equal(runtime.store.data.photos[2].trigger.amount,5);
+  assert.ok(runtime.store.data.seen.includes('cli:cheer'));assert.ok(!runtime.store.data.seen.includes('cheer'));
+  const stopped=await call('/api/twitch/test/disconnect');assert.equal(stopped.data.mock,false);assert.equal(stopped.data.connected,false);assert.deepEqual(runtime.store.data.twitch,credentials);
+  assert.throws(()=>runtime.twitch.open('ws://127.0.0.1:8080/ws',false),/Unexpected/);
+ }finally{runtime.close();for(const client of wss.clients)client.terminate();await new Promise(r=>wss.close(r));server.closeAllConnections();await new Promise(r=>server.close(r));await rm(directory,{recursive:true,force:true});}
+});

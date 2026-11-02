@@ -71,3 +71,31 @@ Modern font choices include locally bundled Space Grotesk, Outfit, Sora, and Jet
 Default emoji stickers use locally bundled Twemoji v17.0.3 SVG artwork (CC BY 4.0), with white vector outlines. They do not depend on operating-system emoji fonts or bitmap glyphs. Attribution and licenses are available at `/credits.html` and `public/assets/emoji/`. User-created stickers remain separate.
 
 In **Capture → On-stream capture**, enable **3–2–1 countdown** and/or **Shutter animation**, then save capture defaults. Copy the browser source URL into OBS at 1920 × 1080 and keep it active in the program scene. Manual and Twitch-triggered captures use the same sequence: countdown, clear the overlay, grab the program frame, shutter animation, and photo reveal. The countdown and shutter are omitted from the saved image.
+
+
+## Test Cheers and subscriptions without Affiliate
+
+Install the official [Twitch CLI](https://dev.twitch.tv/docs/cli/). The `npm run twitch -- ...` launcher uses a portable Windows CLI under `data/tools/twitch-cli/bin/` when available, or the `twitch` executable on PATH. In one terminal run:
+
+```powershell
+npm run twitch -- event websocket start-server
+```
+
+In **Connections → Test with Twitch CLI**, leave the local port at `8080` and click **Connect CLI test server**. No Twitch login, client secret, Affiliate status, or real purchase is needed. Connect OBS, enable the Cheer/subscription capture switches, set a suitable minimum Bits threshold, and save triggers. In another terminal run:
+
+```powershell
+npm run twitch -- event trigger channel.cheer --transport=websocket
+npm run twitch -- event trigger channel.subscribe --transport=websocket
+npm run twitch -- event trigger channel.subscription.gift --transport=websocket
+npm run twitch -- event trigger channel.subscription.message --transport=websocket
+```
+
+Use the CLI server's default settings, without `--require-subscription`; StreamPics does not register mock subscriptions. The example trigger commands target the CLI's default port, `8080`. The test connection only accepts a numeric loopback port and never forwards real Twitch credentials. Mock events use the same normalization, deduplication, trigger filters, capture queue, OBS countdown/shutter, attribution, and overlay path as live events. They take real OBS screenshots, save to the active capture album, start with the title **CLI test moment**, and appear as **[TEST]** in capture activity. Test status is retained in trigger metadata even if you rename the photo. Samples added through **Add sample captures** remain a separate feature.
+
+Test mode temporarily replaces the production Twitch listener, preserves your saved Twitch login, and does not persist across app restarts. Click **Exit test mode**, then reconnect with Twitch to resume real events. The [official WebSocket testing guide](https://dev.twitch.tv/docs/cli/websocket-event-command/) describes mock server behavior and reconnect testing.
+
+Built-in photo styles include **CRT replay**, with a rounded retro monitor bezel, scanlines, and hardware controls, and **Loot receipt**, with thermal-paper edges, a barcode, and drop details. Both have distinct square-crop and 16:9 layouts, keep titles/captions and attribution editable, and remain vector-sharp in previews and exports. Their stored template IDs remain `postcard` and `ticket` for existing photo compatibility.
+
+Album inspection uses nearly the full viewport. **Hide details** removes the sidebar while album open/close, page navigation, zoom, and flip controls stay available. Zoom uses fixed model dimensions so pages, photos, text, and binding scale uniformly. Flipping an open album reveals two portrait cover boards: a matching quiet back cover and the original front cover, without stretching the front design across the spread.
+
+Double-click a closed album cover to open it. Each page staggers its two photos toward the top left and bottom right, with proportional margins and separation. The 3D album has front/back boards plus a four-sided page block and spine, so its thickness remains visible when rotated edge-on.

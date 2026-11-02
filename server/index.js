@@ -40,11 +40,11 @@ export async function createApp({ directory = path.join(root, 'data'), obsOverri
       const id = randomUUID();
       await writeFile(path.join(directory, 'images', `${id}.png`), buffer);
       const photo = { id, image: `/images/${id}.png`, createdAt: new Date().toISOString(),
-        title: 'A moment to keep', caption: '', template: store.data.settings.template,
+        title: trigger?.test?'CLI test moment':'A moment to keep', caption: '', template: store.data.settings.template,
         albumId, font:store.data.settings.font||'template', format:store.data.settings.format||'square', finish:store.data.settings.finish||'matte', rarity:'rare',power:100,
         stickers: [], designId: store.data.settings.designId || '', showAttribution: store.data.settings.showAttribution, trigger, scene };
       store.data.photos.push(photo); await store.save();
-      await store.record({ status: 'captured', message: trigger ? `${trigger.viewer} · ${trigger.amount} ${trigger.unit}` : 'A moment captured by you', photoId: id });
+      await store.record({ status: 'captured', message: trigger ? `${trigger.test?'[TEST] ':''}${trigger.viewer} · ${trigger.amount} ${trigger.unit}` : 'A moment captured by you', photoId: id });
       broadcast('capture', { photo }); return photo;
       } catch(error) {captureEffect=null;throw error;}
     }).finally(() => { queueSize--; });
@@ -54,7 +54,7 @@ export async function createApp({ directory = path.join(root, 'data'), obsOverri
     const settings = store.data.settings;
     if (event.kind === 'bits' ? (!settings.bitsEnabled || event.amount < settings.minBits) : !settings.subsEnabled) return;
     try { await capture(event); }
-    catch (error) { await store.record({ status: 'failed', message: `Could not capture ${event.viewer}'s moment: ${error.message}`, trigger: event }); broadcast(); }
+    catch (error) { await store.record({ status: 'failed', message: `${event.test?'[TEST] ':''}Could not capture ${event.viewer}'s moment: ${error.message}`, trigger: event }); broadcast(); }
   }, () => broadcast());
   const app = express();
   app.disable('x-powered-by');
@@ -180,6 +180,8 @@ export async function createApp({ directory = path.join(root, 'data'), obsOverri
     await store.save(); broadcast(); res.status(201).json({ok:true});
   });
   app.post('/api/demo/clear', async (_req,res) => { store.data.photos = store.data.photos.filter(p => !p.demo); await store.save(); broadcast(); res.json({ok:true}); });
+  app.post('/api/twitch/test/connect',async(req,res)=>{await twitch.connectMock(req.body.port??8080);broadcast();res.json(twitch.status());});
+  app.post('/api/twitch/test/disconnect',(_req,res)=>{if(twitch.mock)twitch.disconnect();broadcast();res.json(twitch.status());});
   app.post('/api/auth/:provider', (req,res) => {
     if (!['chatgpt','twitch'].includes(req.params.provider)) return res.sendStatus(404);
     res.json({url:req.params.provider==='twitch'?twitch.start():chatgpt.start()});

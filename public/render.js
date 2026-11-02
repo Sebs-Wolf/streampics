@@ -1,7 +1,7 @@
 import {defaultStickerSvg} from './stickers.js';
 export {stickerNames,stickerGroups} from './stickers.js';
 export const escape = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export const frameNames = {polaroid:'Instant classic',tcg:'Collector card',film:'Film strip',postcard:'Postcard',ticket:'Event pass',noir:'After hours'};
+export const frameNames = {polaroid:'Instant classic',tcg:'Collector card',film:'Film strip',postcard:'CRT replay',ticket:'Loot receipt',noir:'After hours'};
 
 export const palette = {sage:['#698476','#dce4d8'],rose:['#b57c7d','#efdcda'],midnight:['#35495b','#d6e0e7'],sand:['#ae8e59','#e9dfc8']};
 export function motifSvg(kind,accent='#e7b851',ink='#536e60') {
