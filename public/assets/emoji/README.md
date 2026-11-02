@@ -1,0 +1,1 @@
+Twemoji v17.0.3 SVG graphics by Twitter, Inc. and other contributors. Licensed CC BY 4.0. Source: https://github.com/jdecked/twemoji/tree/v17.0.3/assets/svg . Original SVGs are kept here; StreamPics adds vector white outlines in the compiled sticker module. No emoji glyphs or bitmap emoji are used.

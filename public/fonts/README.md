@@ -1,0 +1,1 @@
+Bundled from the @fontsource-variable packages, version 5.3.0. Each font is distributed under the accompanying SIL Open Font License. Latin variable-weight subsets are served locally; unsupported characters use the selected fallback stack.

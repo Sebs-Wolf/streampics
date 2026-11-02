@@ -1,0 +1,30 @@
+import {fontFamily} from './fonts.js';
+const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export const coverStyles={
+ broadcast:{name:'Silver screen',detail:'Black bookcloth · silver foil',accent:'#c6cbd0',font:'Outfit, sans-serif'},
+ arcade:{name:'Denim replay',detail:'Stitched denim · embroidered patch',accent:'#e9c875',font:'Space Grotesk, sans-serif'},
+ quest:{name:'Guild archive',detail:'Embossed leather · gilded details',accent:'#dfbd79',font:'Georgia, serif'},
+ scrapbook:{name:'Sunroom',detail:'Natural linen · pressed botanicals',accent:'#9d604b',font:'Georgia, serif'},
+ minimal:{name:'Wayfinder',detail:'Canvas journal · leather binding',accent:'#c8b57a',font:'JetBrains Mono, monospace'},
+ backstage:{name:'Keepsake vault',detail:'Embossed leather · brass clasp',accent:'#dfbd7a',font:'Georgia, serif'},
+ midnight:{name:'Night shift',detail:'Orbital violet',accent:'#aaa0ff',family:'orbital'},
+ sage:{name:'Neon signal',detail:'Mint frequency',accent:'#8ee5bf',family:'orbital'},
+ rose:{name:'Afterglow',detail:'Rose chrome',accent:'#f494b6',family:'orbital'},
+ sand:{name:'Golden hour',detail:'Solar metallic',accent:'#efc478',family:'orbital'}
+};
+export function alternativeCover(album,count=0){
+ const style=coverStyles[album.theme];if(!style||style.family==='orbital')return null;
+ const e=escape,n=String(count).padStart(2,'0'),font=fontFamily(album.font)||style.font;
+ const title=`<div class="alt-cover-title"><h3>${e(album.title)}</h3>${album.subtitle?.trim()?`<p>${e(album.subtitle)}</p>`:''}</div>`;
+ const brand='<span class="alt-cover-brand">STREAM<span>PICS</span></span>';
+ const type=album.mode==='binder'?'COLLECTOR BINDER':'PHOTO ALBUM';
+ const art={
+  broadcast:`<div class="cinema-spine" aria-hidden="true"><i></i><i></i></div><header>${brand}<span>VOL. ${n}</span></header><div class="cinema-inset"><span class="alt-cover-kicker">THE MOMENTS WE KEEP</span><div class="cinema-aperture" aria-hidden="true">${Array.from({length:6},(_,i)=>`<i style="--blade:${i}"></i>`).join('')}<b></b></div>${title}<span class="cinema-edition">A STREAM IN STILL FRAMES</span></div><footer><span>${n} MOMENTS</span><span>${type}</span></footer>`, 
+  arcade:`<header>${brand}<span>VOL. ${n}</span></header><div class="denim-stitch-frame" aria-hidden="true"></div><div class="denim-patch" aria-hidden="true"><div class="patch-emblem"></div><span>GOOD TIMES<br>ON REPEAT</span><i></i></div><div class="denim-label">${title}<span class="denim-label-caption">THE COMMUNITY ARCHIVE</span></div><span class="denim-tab" aria-hidden="true">SP</span><footer><span>${n} MOMENTS KEPT</span><span>${type}</span></footer><span class="denim-bookmark" aria-hidden="true"></span>`,
+  quest:`<span class="quest-corner q-tl" aria-hidden="true"></span><span class="quest-corner q-tr" aria-hidden="true"></span><span class="quest-corner q-bl" aria-hidden="true"></span><span class="quest-corner q-br" aria-hidden="true"></span><header>${brand}<span>CHRONICLES / ${n}</span></header><div class="quest-crest" aria-hidden="true"><i></i><b>✦</b><span></span></div><span class="alt-cover-kicker">THE GUILD ARCHIVE</span>${title}<div class="quest-divider" aria-hidden="true">◆</div><footer><span>${n} MEMORIES INSCRIBED</span><span>${type}</span></footer>`,
+  scrapbook:`<div class="linen-spine" aria-hidden="true"><span>STREAM PICS / ${n}</span></div><header>${brand}<span>COLLECTED WITH CARE</span></header><div class="botanical-print" aria-hidden="true"><div class="botanical-composition"><span class="botanical-sun"></span><div class="botanical-sprig"><span class="sprig-stem"></span>${[18,36,54,72].map((y,i)=>`<span class="sprig-pair" style="--y:${y}%;--length:${12+i*1.8}cqw"><i></i><i></i></span>`).join('')}<i class="sprig-tip"></i></div></div><span class="botanical-caption">LITTLE THINGS, KEPT FOREVER</span></div><div class="linen-title">${title}</div><footer><span>VOLUME ${n}</span><span>${type}</span></footer><span class="linen-ribbon" aria-hidden="true"></span>`, 
+  minimal:`<div class="journal-leather-spine" aria-hidden="true"><i></i><i></i><i></i></div><span class="journal-corner jc-top" aria-hidden="true"></span><span class="journal-corner jc-bottom" aria-hidden="true"></span><header>${brand}<span>FIELD JOURNAL / ${n}</span></header><div class="journal-map" aria-hidden="true"><div class="terrain-contours">${Array.from({length:5},(_,i)=>`<i style="--contour:${i}"></i>`).join('')}</div><div class="map-mountains"><i></i><i></i><i></i></div><div class="trail"><i></i><i></i><i></i><span class="trail-start"></span><span class="trail-end"></span></div><span class="map-compass"><b>N</b><i></i><em>E</em></span><span class="map-location">THE LONG WAY HOME</span><span class="map-stamp">SP<br>EXPEDITION</span></div><div class="journal-title-plate"><span class="alt-cover-kicker">A JOURNEY WITH CHAT</span>${title}</div><footer><span>${n} PLACES IN TIME</span><span>${type}</span></footer><span class="journal-elastic" aria-hidden="true"></span>`,
+  backstage:`<div class="vault-inset" aria-hidden="true"></div><div class="vault-spine-bands" aria-hidden="true"><i></i><i></i><i></i></div><header>${brand}<span>PRIVATE COLLECTION</span></header><div class="vault-emblem" aria-hidden="true"><i></i><i></i><span class="vault-keyhole"></span><b>✧</b></div><div class="vault-title-plate"><span class="alt-cover-kicker">THE KEEPSAKE VAULT</span>${title}<span class="vault-plate-screw screw-a" aria-hidden="true"></span><span class="vault-plate-screw screw-b" aria-hidden="true"></span></div><div class="vault-clasp" aria-hidden="true"><i></i></div><footer><span>VOLUME ${n}</span><span>${type}</span></footer>`
+ }[album.theme];
+ return `<div class="album-cover alternative-cover style-${album.theme} ${album.mode==='binder'?'alt-binder':''}" style="--cover-accent:${style.accent};--album-font:${e(font)}"><span class="cover-binding" aria-hidden="true"></span><span class="cover-board-edge" aria-hidden="true"></span>${art}</div>`;
+}
