@@ -2,6 +2,10 @@
 
 A local Node.js + Express companion that turns Twitch moments into collectible photos and interactive albums.
 
+## Watch StreamPics
+
+[Watch the trailer](https://youtu.be/Voi-AyonAmY) · [Watch the demo](https://youtu.be/DodtDuZeDc0)
+
 ## Collection and creator workspace
 
 The `/` collection is exclusively for browsing: an album shelf and item inspection. Albums start closed. Select one, rotate or zoom the cover, then open it to turn pages. Select a photo to inspect it separately. Drag or use arrow keys to rotate, scroll or use the zoom buttons to zoom, and use Flip to inspect the reverse. Holo and prismatic card lighting follows the card viewing angle. Reset view restores the original orientation.
