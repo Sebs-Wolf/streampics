@@ -4,7 +4,7 @@ A local Node.js + Express companion that turns Twitch moments into collectible p
 
 ## Watch StreamPics
 
-[Watch the trailer](https://youtu.be/Voi-AyonAmY) · [Watch the demo](https://youtu.be/DodtDuZeDc0)
+[Watch the trailer](https://youtu.be/Voi-AyonAmY) · [Watch the demo](https://youtu.be/xw8ooQiWlOg)
 
 ## Collection and creator workspace
 
